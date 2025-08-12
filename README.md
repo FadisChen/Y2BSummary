@@ -1,6 +1,6 @@
-# Y2BExt - YouTube 影片摘要工具
+# Y2BSummary - YouTube 影片摘要工具
 
-Y2BExt 是一個瀏覽器擴充功能，專為 YouTube 用戶設計，旨在利用強大的 AI（Google Gemini API）快速摘要影片內容。無論是學習、研究還是快速了解影片主旨，Y2BExt 都能幫助您節省時間，高效獲取關鍵資訊。
+Y2BSummary 是一個瀏覽器擴充功能，專為 YouTube 用戶設計，旨在利用強大的 AI（Google Gemini API）快速摘要影片內容。無論是學習、研究還是快速了解影片主旨，Y2BExt 都能幫助您節省時間，高效獲取關鍵資訊。
 
 ## 功能特色
 
@@ -15,13 +15,13 @@ Y2BExt 是一個瀏覽器擴充功能，專為 YouTube 用戶設計，旨在利�
 
 1.  **下載專案**：
     ```bash
-    git clone https://github.com/your-username/Y2BExt.git
-    cd Y2BExt
+    git clone https://github.com/FadisChen/Y2BSummary.git
+    cd Y2BSummary
     ```
 2.  **在 Chrome 瀏覽器中載入擴充功能**：
     *   開啟 Chrome 瀏覽器，在網址列輸入 `chrome://extensions` 並按下 Enter，或從選單中選擇「更多工具」>「擴充功能」。
     *   開啟右上角的「開發人員模式」開關。
-    *   點擊「載入未封裝項目」按鈕，然後選擇您下載的 `Y2BExt` 專案資料夾。
+    *   點擊「載入未封裝項目」按鈕，然後選擇您下載的 `Y2BSummary` 專案資料夾。
     *   擴充功能將會被載入，並出現在您的擴充功能列表中。
 
 ## 使用方法
