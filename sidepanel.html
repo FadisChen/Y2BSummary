@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Y2BExt</title>
+    <link rel="stylesheet" href="sidepanel.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header-row">
+            <h1></h1>
+            <div class="header-buttons">
+                <button id="refresh-btn" class="icon-btn" title="重新整理網址和範圍">↻</button>
+                <button id="settings-btn" class="icon-btn" title="設定">⚙️</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="video-url">影片網址:</label>
+            <input type="text" id="video-url" placeholder="貼上或編輯 YouTube 影片網址">
+        </div>
+
+        <form id="analysis-form">
+            <div class="form-group">
+                <label for="prompt">Prompt:</label>
+                <textarea id="prompt" rows="4" placeholder="請以條列方式摘要影片內容"></textarea>
+            </div>
+
+            <div class="range-summary">
+                <span>分析範圍：</span>
+                <span id="selected-range">00:00 - 00:00</span>
+                <span class="hint">（點右上角⚙️調整）</span>
+            </div>
+
+            <div class="token-info">
+                <p>
+                    預估 Tokens：<span id="token-count">0</span>
+                    ／上限：<span id="token-cap">1,048,576</span>
+                </p>
+                <p id="token-warning" class="warn" style="display:none;">超過上限，請縮短區間或降低 FPS。</p>
+            </div>
+            <div class="form-group2">
+                <button type="submit" id="submit-btn">送出分析</button>
+            </div>
+        </form>
+
+        <hr>
+
+        <div id="result-container">
+            <div id="result-display" class="loading">請點擊送出按鈕開始分析...</div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-content solid-card">
+            <div class="modal-header">
+                <h2>設定</h2>
+                <button id="modal-close" class="icon-btn" title="關閉">✖️</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="api-key">Gemini API Key</label>
+                    <input type="password" id="api-key" placeholder="請輸入 API Key">
+                </div>
+
+                <fieldset>
+                    <legend>參數設定</legend>
+                    <div class="form-group">
+                        <label>分析範圍：<span id="start-label">00:00</span> - <span id="end-label">01:00</span></label>
+                        <div class="dual-slider">
+                            <div class="range-track" id="range-track"></div>
+                            <input type="range" id="range-start" min="0" max="60" value="0" step="1">
+                            <input type="range" id="range-end" min="0" max="60" value="60" step="1">
+                        </div>
+                    </div>
+                    <div class="form-group inline">
+                        <label for="fps">FPS（可小數）</label>
+                        <input type="number" id="fps" value="1" min="0.1" step="0.1">
+                    </div>
+                    <div class="form-group inline">
+                        <label for="media-res">媒體解析度</label>
+                        <select id="media-res">
+                            <option value="default" selected>預設</option>
+                            <option value="low">低</option>
+                        </select>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="modal-footer">
+                <button id="modal-save" class="primary">儲存</button>
+                <button id="modal-cancel" class="secondary">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="sidepanel.js"></script>
+</body>
+
+</html>

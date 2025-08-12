@@ -1,0 +1,368 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 20px;
+    height: 100vh;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    /* 避免水平捲軸 */
+    background: linear-gradient(135deg, rgba(30, 35, 45, 0.9), rgba(20, 25, 35, 0.95));
+    background-color: #1a1f2e;
+    backdrop-filter: blur(6px);
+    color: #e8eaed;
+}
+
+.container {
+    width: 100%;
+}
+
+.glass-card {
+    background: rgba(40, 45, 55, 0.6);
+    border-radius: 16px;
+    border: 1px solid rgba(60, 65, 75, 0.8);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 16px;
+}
+
+h1 {
+    font-size: 1.2em;
+    color: #8ab4f8;
+    margin: 0;
+}
+
+.header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group.inline {
+    display: inline-block;
+    width: 48%;
+}
+
+.form-group2 {
+    text-align: center;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #bdc1c6;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="password"],
+select,
+textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid rgba(95, 99, 104, 0.6);
+    border-radius: 10px;
+    box-sizing: border-box;
+    /* Important */
+    background: rgba(32, 37, 47, 0.8);
+    color: #e8eaed;
+}
+
+input[readonly] {
+    background-color: rgba(60, 64, 67, 0.6);
+    color: #9aa0a6;
+}
+
+textarea {
+    resize: vertical;
+}
+
+fieldset {
+    border: 1px solid rgba(95, 99, 104, 0.6);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 15px;
+    background: rgba(40, 45, 55, 0.5);
+}
+
+legend {
+    padding: 0 5px;
+    font-weight: 500;
+    color: #8ab4f8;
+}
+
+.token-info {
+    text-align: center;
+    margin: 15px 0;
+    font-weight: 500;
+}
+
+#token-count {
+    color: #d93025;
+    font-weight: bold;
+}
+
+button {
+    padding: 10px 14px;
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.95em;
+    transition: all 0.2s ease;
+}
+
+button.primary {
+    width: auto;
+}
+
+button.secondary {
+    width: auto;
+    background: #5f6368;
+}
+
+button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(26, 115, 232, 0.2);
+}
+
+button:disabled {
+    background-color: #5f6368;
+    cursor: not-allowed;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid #5f6368;
+    margin: 20px 0;
+}
+
+#result-container h2 {
+    font-size: 1.1em;
+}
+
+#result-display {
+    background: rgba(32, 37, 47, 0.85);
+    border: 1px solid rgba(95, 99, 104, 0.6);
+    border-radius: 12px;
+    padding: 15px;
+    min-height: 100px;
+    white-space: pre-wrap;
+    /* Preserve whitespace and newlines */
+    word-wrap: break-word;
+    color: #d6dbe3; /* 柔和的離白，降低刺眼度 */
+    font-size: 1.1em; /* 放大 Gemini 回應文字 */
+    line-height: 1.7; /* 提升可讀性的行距 */
+}
+
+/* Markdown HTML 樣式 */
+#result-display h1,
+#result-display h2,
+#result-display h3 {
+    color: #8ab4f8;
+    margin: 16px 0 8px 0;
+    font-weight: 600;
+}
+
+#result-display h1 {
+    font-size: 1.4em;
+}
+
+#result-display h2 {
+    font-size: 1.2em;
+}
+
+#result-display h3 {
+    font-size: 1.1em;
+}
+
+#result-display strong {
+    font-weight: 600;
+    color: #e0e4ea; /* 稍淡的高亮，避免過亮純白 */
+}
+
+#result-display em {
+    font-style: italic;
+    color: #9aa0a6;
+}
+
+#result-display ul {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+#result-display li {
+    margin: 4px 0;
+    line-height: 1.4;
+}
+
+#result-display code {
+    background: rgba(138, 180, 248, 0.18);
+    color: #8ab4f8;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9em;
+}
+
+#result-display pre {
+    background: rgba(32, 37, 47, 0.8);
+    border: 1px solid rgba(95, 99, 104, 0.5);
+    border-radius: 8px;
+    padding: 12px;
+    margin: 12px 0;
+    overflow-x: auto;
+}
+
+#result-display pre code {
+    background: none;
+    padding: 0;
+    color: #e8eaed;
+    font-size: 0.85em;
+    line-height: 1.4;
+}
+
+#result-display.loading {
+    color: #9aa0a6;
+}
+
+.icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.08);
+    color: #e8eaed;
+    border: 1px solid rgba(95, 99, 104, 0.6);
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.range-summary {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.hint {
+    color: #9aa0a6;
+    font-size: 0.85em;
+}
+
+.warn {
+    color: #d93025;
+    font-weight: 600;
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    /* 加深背景遮罩，提升可讀性 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    width: 100%;
+    max-width: 520px;
+}
+
+.solid-card {
+    background: rgba(32, 37, 47, 0.95);
+    border-radius: 16px;
+    border: 1px solid rgba(95, 99, 104, 0.6);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+    padding: 16px;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* 雙滑桿樣式與可視化選區 */
+.dual-slider {
+    position: relative;
+    padding: 14px 0 6px;
+}
+
+.dual-slider input[type="range"] {
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%;
+    pointer-events: none;
+    /* 讓滑軌不擋住另一個滑桿 */
+    -webkit-appearance: none;
+    appearance: none;
+    background: none;
+}
+
+.dual-slider input[type="range"]::-webkit-slider-thumb {
+    pointer-events: auto;
+    /* 讓拇指可互動 */
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #1a73e8;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(26, 115, 232, 0.3);
+}
+
+.dual-slider input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px;
+    background: transparent;
+}
+
+.range-track {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 4px;
+    transform: translateY(-50%);
+    border-radius: 4px;
+    background: linear-gradient(90deg, #3c4043 0%, #3c4043 100%);
+}
+
+/* 無障礙：輸入與按鈕 focus 樣式 */
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+    outline: 2px solid #8ab4f8;
+    outline-offset: 2px;
+}
