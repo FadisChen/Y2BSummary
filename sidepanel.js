@@ -191,9 +191,11 @@ document.addEventListener('DOMContentLoaded', () => {
         tokenCountSpan.textContent = totalTokens.toLocaleString();
 
         if (totalTokens > TOKEN_CAP) {
+            tokenCountSpan.style.color = '#d93025'; // Set color to red if over cap
             tokenWarning.style.display = '';
             submitBtn.disabled = true;
         } else {
+            tokenCountSpan.style.color = '#e8eaed'; // Set color to white if within cap
             tokenWarning.style.display = 'none';
             submitBtn.disabled = false;
         }
