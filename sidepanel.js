@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Default prompt
     if (!promptInput.value) {
-        promptInput.value = '請提供：\n1. 影片主要內容摘要\n2. 關鍵觀點和重要資訊\n3. 主要結論或要點\n4. 如果有教學內容，請列出主要步驟\n\n請用繁體中文回答，並保持內容簡潔明瞭。';
+        promptInput.value = '請提供：\n1. 影片主要內容筆記\n2. 關鍵觀點和重要資訊\n3. 主要結論或要點\n4. 如果有教學內容，請列出主要步驟\n\n請用繁體中文回答，並保持內容簡潔明瞭。';
     }
 
     // 1) Seed URL from active tab (still editable)
