@@ -1,4 +1,10 @@
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
+const DEFAULT_GEMINI_MODEL = 'gemini-3-flash-preview';
+
+const getGeminiApiUrl = (model) => {
+    const modelName = model || DEFAULT_GEMINI_MODEL;
+    return `${GEMINI_API_BASE}${modelName}:generateContent`;
+};
 
 // --- Side Panel Logic ---
 chrome.sidePanel
@@ -51,9 +57,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function handleAnalysisRequest(data, sendResponse) {
     const { url, prompt, startTime, endTime, fps } = data;
 
-    // 取得 API 金鑰
-    chrome.storage.local.get(['geminiApiKey'], async (store) => {
+    // 取得 API 金鑰和 Model
+    chrome.storage.local.get(['geminiApiKey', 'geminiModel'], async (store) => {
         const apiKey = store.geminiApiKey;
+        const geminiModel = store.geminiModel || DEFAULT_GEMINI_MODEL;
         if (!apiKey) {
             sendResponse({ error: '尚未設定 API 金鑰，請先於面板儲存您的金鑰。' });
             return;
@@ -90,7 +97,7 @@ async function handleAnalysisRequest(data, sendResponse) {
         };
 
         try {
-            const response = await fetch(GEMINI_API_URL, {
+            const response = await fetch(getGeminiApiUrl(geminiModel), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

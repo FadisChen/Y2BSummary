@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalCancel = document.getElementById('modal-cancel');
     const modalSave = document.getElementById('modal-save');
     const apiKeyInput = document.getElementById('api-key');
+    const geminiModelInput = document.getElementById('gemini-model');
     const fpsInput = document.getElementById('fps');
     const mediaResSelect = document.getElementById('media-res');
     const rangeStart = document.getElementById('range-start');
@@ -134,8 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2) Load saved settings
     const loadSettings = () => new Promise((resolve) => {
-        chrome.storage.local.get(['geminiApiKey', 'fps', 'mediaRes'], (store) => {
+        chrome.storage.local.get(['geminiApiKey', 'geminiModel', 'fps', 'mediaRes'], (store) => {
             if (store.geminiApiKey) apiKeyInput.value = store.geminiApiKey;
+            geminiModelInput.value = store.geminiModel || 'gemini-3-flash-preview';
             fpsInput.value = Number(store.fps) > 0 ? String(store.fps) : '1.0';
             mediaResSelect.value = store.mediaRes || 'default';
             resolve();
@@ -145,6 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveSettings = () => new Promise((resolve) => {
         const settings = {
             geminiApiKey: apiKeyInput.value.trim(),
+            geminiModel: geminiModelInput.value.trim() || 'gemini-3-flash-preview',
             fps: parseFloat(fpsInput.value) || 1,
             mediaRes: mediaResSelect.value || 'default'
         };
