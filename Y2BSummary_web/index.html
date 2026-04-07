@@ -583,6 +583,35 @@
       display: flex;
       flex-direction: column;
       gap: 20px;
+      max-height: min(70vh, 640px);
+      overflow-y: auto;
+    }
+
+    .settings-fieldset {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px 16px;
+      margin: 0;
+    }
+
+    .settings-fieldset legend {
+      font-family: var(--font-sans);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--ink-muted);
+      letter-spacing: 0.06em;
+      padding: 0 6px;
+    }
+
+    .param-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .param-row .field {
+      margin: 0;
     }
 
     .field {
@@ -937,6 +966,23 @@
             placeholder="請輸入 prompt…"
           ></textarea>
         </div>
+
+        <fieldset class="settings-fieldset">
+          <legend>參數設定</legend>
+          <div class="param-row">
+            <div class="field">
+              <label class="field-label" for="fps">FPS（可小數）</label>
+              <input type="number" id="fps" class="field-input" value="1" min="0.1" step="0.1" />
+            </div>
+            <div class="field">
+              <label class="field-label" for="media-res">媒體解析度</label>
+              <select id="media-res" class="field-input">
+                <option value="default" selected>預設</option>
+                <option value="low">低</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
       </div>
 
       <div class="modal-footer">

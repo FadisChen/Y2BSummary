@@ -89,6 +89,9 @@ ${MARK_MINDMAP}
   const resultContent   = document.getElementById('result-content');
   const toast           = document.getElementById('toast');
 
+  const fpsInput        = document.getElementById('fps');
+  const mediaResSelect  = document.getElementById('media-res');
+
   // ── Tab refs ───────────────────────────────────────────────────────────────
   const tabNote       = document.getElementById('tab-note');
   const tabMindmap    = document.getElementById('tab-mindmap');
@@ -124,6 +127,8 @@ ${MARK_MINDMAP}
     apiKeyInput.value    = s.apiKey    || '';
     modelNameInput.value = s.modelName || DEFAULT_MODEL;
     promptInput.value    = s.prompt    || DEFAULT_PROMPT;
+    fpsInput.value       = Number(s.fps) > 0 ? String(s.fps) : '1';
+    mediaResSelect.value = s.mediaRes || 'default';
   }
 
   function persistModal() {
@@ -131,6 +136,8 @@ ${MARK_MINDMAP}
     s.apiKey    = apiKeyInput.value.trim();
     s.modelName = modelNameInput.value.trim() || DEFAULT_MODEL;
     s.prompt    = promptInput.value.trim()    || DEFAULT_PROMPT;
+    s.fps       = parseFloat(fpsInput.value) || 1;
+    s.mediaRes  = mediaResSelect.value || 'default';
     saveSettings(s);
   }
 
@@ -138,7 +145,6 @@ ${MARK_MINDMAP}
   function openModal() {
     populateModal();
     modalOverlay.classList.add('is-open');
-    // Focus first input for accessibility
     setTimeout(() => apiKeyInput.focus(), 50);
   }
 
@@ -399,21 +405,26 @@ ${MARK_MINDMAP}
     const prompt = buildCombinedVideoPrompt(s.prompt || DEFAULT_PROMPT);
     const apiUrl = `${GEMINI_API_BASE}${encodeURIComponent(model)}:generateContent`;
 
+    const fpsVal =
+      parseFloat(fpsInput.value) || parseFloat(s.fps) || 1;
+    const videoMeta = { fps: fpsVal > 0 ? fpsVal : 1 };
+
     const requestBody = {
       contents: [
         {
           parts: [
             {
-              file_data: { file_uri: url }
+              file_data: { file_uri: url },
+              video_metadata: videoMeta,
             },
-            { text: prompt }
-          ]
-        }
+            { text: prompt },
+          ],
+        },
       ],
       systemInstruction: {
         role: 'system',
-        parts: [{ text: '請以繁體中文回覆。' }]
-      }
+        parts: [{ text: '請以繁體中文回覆。' }],
+      },
     };
 
     showState('loading');
@@ -488,4 +499,9 @@ ${MARK_MINDMAP}
 
   // ── Init ───────────────────────────────────────────────────────────────────
   showState('placeholder');
+  (function initFpsMediaFromStorage() {
+    const st = loadSettings();
+    if (fpsInput && Number(st.fps) > 0) fpsInput.value = String(st.fps);
+    if (mediaResSelect && st.mediaRes) mediaResSelect.value = st.mediaRes;
+  })();
 })();
