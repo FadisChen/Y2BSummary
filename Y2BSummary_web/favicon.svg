@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="YouTube 摘要">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5A7FB8"/>
+      <stop offset="100%" stop-color="#3D5F94"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#bg)"/>
+  <!-- 播放：影片 -->
+  <path d="M11 9v14l11-7-11-7z" fill="#FAFAF7"/>
+  <!-- 底線：摘要／筆記 -->
+  <rect x="8" y="23.5" width="16" height="2.2" rx="1.1" fill="#FAFAF7" opacity="0.92"/>
+</svg>
