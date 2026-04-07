@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube 摘要</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg:        #FAFAF7;
+      --bg-card:   #FFFFFF;
+      --border:    #E2DDD5;
+      --border-focus: #8A9BB5;
+      --ink:       #1C1C1E;
+      --ink-muted: #6B6860;
+      --ink-faint: #A8A49C;
+      --accent:    #4A6FA5;
+      --accent-bg: #EEF2F8;
+      --danger:    #B84040;
+      --success:   #3A7D5A;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+      --radius:    6px;
+      --radius-lg: 10px;
+      --font-serif: 'Noto Serif TC', serif;
+      --font-sans:  'Noto Sans TC', sans-serif;
+      --transition: 180ms ease;
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ── */
+    .page-wrapper {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* ── Settings button ── */
+    .btn-settings {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--ink-muted);
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      font-weight: 400;
+      cursor: pointer;
+      transition: border-color var(--transition), color var(--transition), background var(--transition);
+    }
+
+    .btn-settings:hover {
+      border-color: var(--border-focus);
+      color: var(--ink);
+      background: var(--accent-bg);
+    }
+
+    .btn-settings:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .btn-settings svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+    }
+
+    /* ── URL Input Section ── */
+    .input-section {
+      margin-bottom: 32px;
+    }
+
+    .input-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--ink-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .url-row {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .url-input {
+      flex: 1;
+      padding: 11px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      color: var(--ink);
+      transition: border-color var(--transition), box-shadow var(--transition);
+      min-width: 0;
+    }
+
+    .url-input::placeholder {
+      color: var(--ink-faint);
+    }
+
+    .url-input:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.12);
+    }
+
+    /* ── Submit button ── */
+    .btn-submit {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 11px 20px;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      color: #fff;
+      font-family: var(--font-sans);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background var(--transition), opacity var(--transition);
+    }
+
+    .btn-submit:hover:not(:disabled) {
+      background: #3a5f95;
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-submit:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .btn-submit svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 32px 0;
+    }
+
+    /* ── Result Section ── */
+    .result-section {
+      min-height: 120px;
+    }
+
+    /* ── Tab bar ── */
+    .tab-bar {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px 9px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: var(--font-sans);
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--ink-faint);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: color var(--transition), border-color var(--transition);
+    }
+
+    .tab-btn svg {
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+    }
+
+    .tab-btn:hover {
+      color: var(--ink-muted);
+    }
+
+    .tab-btn.is-active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-btn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* ── Tab panels ── */
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.is-active {
+      display: block;
+    }
+
+    .result-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      box-shadow: var(--shadow-sm);
+      min-height: 120px;
+    }
+
+    /* ── Mindmap panel ── */
+    .mindmap-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .mindmap-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .mindmap-toolbar-label {
+      font-size: 0.72rem;
+      color: var(--ink-faint);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-right: auto;
+    }
+
+    .btn-tool {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      color: var(--ink-muted);
+      cursor: pointer;
+      transition: background var(--transition), border-color var(--transition), color var(--transition);
+    }
+
+    .btn-tool:hover {
+      background: var(--accent-bg);
+      border-color: var(--border);
+      color: var(--accent);
+    }
+
+    .btn-tool:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .btn-tool svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .btn-tool-divider {
+      width: 1px;
+      height: 16px;
+      background: var(--border);
+      margin: 0 2px;
+    }
+
+    .mindmap-svg-wrap {
+      width: 100%;
+      height: 480px;
+      overflow: hidden;
+      cursor: grab;
+    }
+
+    .mindmap-svg-wrap:active {
+      cursor: grabbing;
+    }
+
+    #mindmap-svg {
+      width: 100%;
+      height: 100%;
+      min-height: 420px;
+      display: none;
+      background: radial-gradient(ellipse at center, #f5f3ef 0%, var(--bg-card) 100%);
+    }
+
+    #mindmap-svg.is-visible {
+      display: block;
+    }
+
+    .mindmap-svg-wrap svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* markmap node text colour override to match design */
+    .mindmap-svg-wrap .markmap-node text {
+      font-family: var(--font-sans) !important;
+      font-size: 13px !important;
+    }
+
+    .mindmap-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      height: 480px;
+      color: var(--ink-faint);
+      font-size: 0.875rem;
+    }
+
+    .mindmap-placeholder svg {
+      width: 32px;
+      height: 32px;
+      opacity: 0.35;
+    }
+
+    /* Placeholder state */
+    .result-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 120px;
+      color: var(--ink-faint);
+      font-size: 0.875rem;
+    }
+
+    .result-placeholder svg {
+      width: 32px;
+      height: 32px;
+      opacity: 0.4;
+    }
+
+    /* Loading state */
+    .result-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      min-height: 120px;
+      color: var(--ink-muted);
+      font-size: 0.875rem;
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Error state */
+    .result-error {
+      color: var(--danger);
+      font-size: 0.875rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .result-error svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Content state */
+    .result-content {
+      font-size: 0.9rem;
+      line-height: 1.8;
+      color: var(--ink);
+    }
+
+    .result-content h1,
+    .result-content h2,
+    .result-content h3 {
+      font-family: var(--font-serif);
+      font-weight: 600;
+      color: var(--ink);
+      margin: 1.4em 0 0.5em;
+    }
+
+    .result-content h1 { font-size: 1.15rem; }
+    .result-content h2 { font-size: 1.05rem; }
+    .result-content h3 { font-size: 0.95rem; }
+
+    .result-content h1:first-child,
+    .result-content h2:first-child,
+    .result-content h3:first-child {
+      margin-top: 0;
+    }
+
+    .result-content p {
+      margin-bottom: 0.9em;
+    }
+
+    .result-content ul,
+    .result-content ol {
+      padding-left: 1.4em;
+      margin-bottom: 0.9em;
+    }
+
+    .result-content li {
+      margin-bottom: 0.3em;
+    }
+
+    .result-content strong {
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    .result-content em {
+      font-style: italic;
+      color: var(--ink-muted);
+    }
+
+    .result-content code {
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem;
+      background: var(--accent-bg);
+      color: var(--accent);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    .result-content pre {
+      background: #F4F2EE;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      overflow-x: auto;
+      margin-bottom: 0.9em;
+    }
+
+    .result-content pre code {
+      background: none;
+      padding: 0;
+      color: var(--ink);
+      font-size: 0.82rem;
+    }
+
+    /* ── Modal Overlay ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(28, 28, 30, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 24px;
+      backdrop-filter: blur(2px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms ease;
+    }
+
+    .modal-overlay.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      width: 100%;
+      max-width: 480px;
+      transform: translateY(8px);
+      transition: transform 200ms ease;
+    }
+
+    .modal-overlay.is-open .modal {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: 0.02em;
+    }
+
+    .btn-modal-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius);
+      color: var(--ink-faint);
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition);
+    }
+
+    .btn-modal-close:hover {
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    .btn-modal-close:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .btn-modal-close svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .modal-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-label {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--ink-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .field-hint {
+      font-size: 0.75rem;
+      color: var(--ink-faint);
+      margin-top: 3px;
+    }
+
+    .field-input {
+      padding: 9px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: var(--font-sans);
+      font-size: 0.875rem;
+      color: var(--ink);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .field-input::placeholder {
+      color: var(--ink-faint);
+    }
+
+    .field-input:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.12);
+    }
+
+    .field-textarea {
+      resize: vertical;
+      min-height: 120px;
+      line-height: 1.6;
+    }
+
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 16px 24px 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-secondary {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--ink-muted);
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: border-color var(--transition), color var(--transition);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--border-focus);
+      color: var(--ink);
+    }
+
+    .btn-secondary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .btn-primary {
+      padding: 8px 20px;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      color: #fff;
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background var(--transition);
+    }
+
+    .btn-primary:hover {
+      background: #3a5f95;
+    }
+
+    .btn-primary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      background: var(--ink);
+      color: #fff;
+      font-size: 0.82rem;
+      padding: 9px 18px;
+      border-radius: 20px;
+      box-shadow: var(--shadow-md);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms ease, transform 200ms ease;
+      white-space: nowrap;
+      z-index: 100;
+    }
+
+    .toast.is-visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .page-wrapper {
+        padding: 32px 16px 64px;
+      }
+
+      .url-row {
+        flex-direction: column;
+      }
+
+      .result-card {
+        padding: 20px 18px;
+      }
+
+      .modal-body {
+        padding: 18px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- URL Input -->
+    <section class="input-section">
+      <label class="input-label" for="video-url">YouTube 網址</label>
+      <div class="url-row">
+        <input
+          type="url"
+          id="video-url"
+          class="url-input"
+          placeholder="https://www.youtube.com/watch?v=..."
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button class="btn-submit" id="submit-btn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+          摘要
+        </button>
+        <button class="btn-settings" id="settings-btn" aria-label="開啟設定">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- Result -->
+    <section class="result-section" aria-live="polite" aria-label="摘要結果">
+
+      <!-- Tab bar -->
+      <div class="tab-bar" role="tablist">
+        <button class="tab-btn is-active" id="tab-note" role="tab" aria-selected="true" aria-controls="panel-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          摘要筆記
+        </button>
+        <button class="tab-btn" id="tab-mindmap" role="tab" aria-selected="false" aria-controls="panel-mindmap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="5" r="2"/>
+            <circle cx="5" cy="19" r="2"/>
+            <circle cx="19" cy="19" r="2"/>
+            <line x1="12" y1="7" x2="12" y2="13"/>
+            <line x1="12" y1="13" x2="5" y2="17"/>
+            <line x1="12" y1="13" x2="19" y2="17"/>
+          </svg>
+          心智圖
+        </button>
+      </div>
+
+      <!-- Panel: 摘要筆記 -->
+      <div class="tab-panel is-active" id="panel-note" role="tabpanel" aria-labelledby="tab-note">
+        <div class="result-card" id="result-card">
+          <div class="result-placeholder" id="result-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>貼上 YouTube 網址後點擊「生成摘要」</span>
+          </div>
+          <div class="result-loading" id="result-loading" style="display:none">
+            <div class="spinner" role="status" aria-label="載入中"></div>
+            <span>正在分析影片內容，請稍候…</span>
+          </div>
+          <div class="result-error" id="result-error" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span id="result-error-msg"></span>
+          </div>
+          <div class="result-content" id="result-content" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- Panel: 心智圖 -->
+      <div class="tab-panel" id="panel-mindmap" role="tabpanel" aria-labelledby="tab-mindmap">
+        <div class="mindmap-card">
+          <div class="mindmap-toolbar">
+            <span class="mindmap-toolbar-label">心智圖</span>
+            <!-- Zoom in -->
+            <button class="btn-tool" id="mm-zoom-in" title="放大" aria-label="放大">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                <line x1="11" y1="8" x2="11" y2="14"/>
+                <line x1="8" y1="11" x2="14" y2="11"/>
+              </svg>
+            </button>
+            <!-- Zoom out -->
+            <button class="btn-tool" id="mm-zoom-out" title="縮小" aria-label="縮小">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                <line x1="8" y1="11" x2="14" y2="11"/>
+              </svg>
+            </button>
+            <div class="btn-tool-divider" aria-hidden="true"></div>
+            <!-- Fit / reset view -->
+            <button class="btn-tool" id="mm-fit" title="重置視圖" aria-label="重置視圖">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10 3v3M10 14v3M3 10h3M14 10h3"/>
+                <circle cx="10" cy="10" r="3"/>
+              </svg>
+            </button>
+            <div class="btn-tool-divider" aria-hidden="true"></div>
+            <!-- Expand all -->
+            <button class="btn-tool" id="mm-expand" title="展開全部" aria-label="展開全部">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 3 21 3 21 9"/>
+                <polyline points="9 21 3 21 3 15"/>
+                <line x1="21" y1="3" x2="14" y2="10"/>
+                <line x1="3" y1="21" x2="10" y2="14"/>
+              </svg>
+            </button>
+            <!-- Collapse all -->
+            <button class="btn-tool" id="mm-collapse" title="縮起全部" aria-label="縮起全部">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="4 14 10 14 10 20"/>
+                <polyline points="20 10 14 10 14 4"/>
+                <line x1="10" y1="14" x2="3" y2="21"/>
+                <line x1="21" y1="3" x2="14" y2="10"/>
+              </svg>
+            </button>
+          </div>
+          <div class="mindmap-svg-wrap" id="mindmap-wrap">
+            <div class="mindmap-placeholder" id="mindmap-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="5" r="2"/>
+                <circle cx="5" cy="19" r="2"/>
+                <circle cx="19" cy="19" r="2"/>
+                <line x1="12" y1="7" x2="12" y2="13"/>
+                <line x1="12" y1="13" x2="5" y2="17"/>
+                <line x1="12" y1="13" x2="19" y2="17"/>
+              </svg>
+              <span>生成摘要後將自動產生心智圖</span>
+            </div>
+            <svg id="mindmap-svg" class="markmap" aria-label="心智圖畫布"></svg>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-title">API 設定</h2>
+        <button class="btn-modal-close" id="modal-close" aria-label="關閉設定">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="field">
+          <label class="field-label" for="api-key">Gemini API Key</label>
+          <input
+            type="password"
+            id="api-key"
+            class="field-input"
+            placeholder="AIza..."
+            autocomplete="off"
+          />
+          <p class="field-hint">金鑰儲存於瀏覽器 localStorage，不會上傳至任何伺服器</p>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="model-name">Model 名稱</label>
+          <input
+            type="text"
+            id="model-name"
+            class="field-input"
+            placeholder="gemini-2.5-flash-preview-04-17"
+          />
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="prompt-input">摘要 Prompt</label>
+          <textarea
+            id="prompt-input"
+            class="field-input field-textarea"
+            placeholder="請輸入 prompt…"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" id="modal-cancel">取消</button>
+        <button class="btn-primary" id="modal-save">儲存設定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- markmap：與 ChatExtension 相同順序（d3 → markmap-lib → markmap-view），使用本地 IIFE 以確保 window.markmap 可用 -->
+  <script src="js/d3.min.js"></script>
+  <script src="js/markmap-lib.min.js"></script>
+  <script src="js/markmap-view.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
