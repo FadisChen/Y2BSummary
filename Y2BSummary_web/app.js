@@ -72,41 +72,41 @@ ${MARK_MINDMAP}
   }
 
   // ── DOM refs ───────────────────────────────────────────────────────────────
-  const videoUrlInput   = document.getElementById('video-url');
-  const submitBtn       = document.getElementById('submit-btn');
-  const settingsBtn     = document.getElementById('settings-btn');
-  const modalOverlay    = document.getElementById('modal-overlay');
-  const modalClose      = document.getElementById('modal-close');
-  const modalCancel     = document.getElementById('modal-cancel');
-  const modalSave       = document.getElementById('modal-save');
-  const apiKeyInput     = document.getElementById('api-key');
-  const modelNameInput  = document.getElementById('model-name');
-  const promptInput     = document.getElementById('prompt-input');
+  const videoUrlInput = document.getElementById('video-url');
+  const submitBtn = document.getElementById('submit-btn');
+  const settingsBtn = document.getElementById('settings-btn');
+  const modalOverlay = document.getElementById('modal-overlay');
+  const modalClose = document.getElementById('modal-close');
+  const modalCancel = document.getElementById('modal-cancel');
+  const modalSave = document.getElementById('modal-save');
+  const apiKeyInput = document.getElementById('api-key');
+  const modelNameInput = document.getElementById('model-name');
+  const promptInput = document.getElementById('prompt-input');
   const resultPlaceholder = document.getElementById('result-placeholder');
-  const resultLoading   = document.getElementById('result-loading');
-  const resultError     = document.getElementById('result-error');
-  const resultErrorMsg  = document.getElementById('result-error-msg');
-  const resultContent   = document.getElementById('result-content');
-  const toast           = document.getElementById('toast');
+  const resultLoading = document.getElementById('result-loading');
+  const resultError = document.getElementById('result-error');
+  const resultErrorMsg = document.getElementById('result-error-msg');
+  const resultContent = document.getElementById('result-content');
+  const toast = document.getElementById('toast');
 
-  const fpsInput        = document.getElementById('fps');
-  const mediaResSelect  = document.getElementById('media-res');
+  const fpsInput = document.getElementById('fps');
+  const mediaResSelect = document.getElementById('media-res');
 
   // ── Tab refs ───────────────────────────────────────────────────────────────
-  const tabNote       = document.getElementById('tab-note');
-  const tabMindmap    = document.getElementById('tab-mindmap');
-  const panelNote     = document.getElementById('panel-note');
-  const panelMindmap  = document.getElementById('panel-mindmap');
+  const tabNote = document.getElementById('tab-note');
+  const tabMindmap = document.getElementById('tab-mindmap');
+  const panelNote = document.getElementById('panel-note');
+  const panelMindmap = document.getElementById('panel-mindmap');
 
   // ── Mindmap refs ───────────────────────────────────────────────────────────
-  const mindmapWrap        = document.getElementById('mindmap-wrap');
-  const mindmapSvg         = document.getElementById('mindmap-svg');
+  const mindmapWrap = document.getElementById('mindmap-wrap');
+  const mindmapSvg = document.getElementById('mindmap-svg');
   const mindmapPlaceholder = document.getElementById('mindmap-placeholder');
-  const mmZoomIn    = document.getElementById('mm-zoom-in');
-  const mmZoomOut   = document.getElementById('mm-zoom-out');
-  const mmFit       = document.getElementById('mm-fit');
-  const mmExpand    = document.getElementById('mm-expand');
-  const mmCollapse  = document.getElementById('mm-collapse');
+  const mmZoomIn = document.getElementById('mm-zoom-in');
+  const mmZoomOut = document.getElementById('mm-zoom-out');
+  const mmFit = document.getElementById('mm-fit');
+  const mmExpand = document.getElementById('mm-expand');
+  const mmCollapse = document.getElementById('mm-collapse');
 
   // ── Settings ───────────────────────────────────────────────────────────────
   function loadSettings() {
@@ -124,20 +124,20 @@ ${MARK_MINDMAP}
 
   function populateModal() {
     const s = loadSettings();
-    apiKeyInput.value    = s.apiKey    || '';
+    apiKeyInput.value = s.apiKey || '';
     modelNameInput.value = s.modelName || DEFAULT_MODEL;
-    promptInput.value    = s.prompt    || DEFAULT_PROMPT;
-    fpsInput.value       = Number(s.fps) > 0 ? String(s.fps) : '1';
+    promptInput.value = s.prompt || DEFAULT_PROMPT;
+    fpsInput.value = Number(s.fps) > 0 ? String(s.fps) : '1';
     mediaResSelect.value = s.mediaRes || 'default';
   }
 
   function persistModal() {
     const s = loadSettings();
-    s.apiKey    = apiKeyInput.value.trim();
+    s.apiKey = apiKeyInput.value.trim();
     s.modelName = modelNameInput.value.trim() || DEFAULT_MODEL;
-    s.prompt    = promptInput.value.trim()    || DEFAULT_PROMPT;
-    s.fps       = parseFloat(fpsInput.value) || 1;
-    s.mediaRes  = mediaResSelect.value || 'default';
+    s.prompt = promptInput.value.trim() || DEFAULT_PROMPT;
+    s.fps = parseFloat(fpsInput.value) || 1;
+    s.mediaRes = mediaResSelect.value || 'default';
     saveSettings(s);
   }
 
@@ -318,9 +318,9 @@ ${MARK_MINDMAP}
   // ── Result display helpers ─────────────────────────────────────────────────
   function showState(state) {
     resultPlaceholder.style.display = state === 'placeholder' ? '' : 'none';
-    resultLoading.style.display     = state === 'loading'     ? '' : 'none';
-    resultError.style.display       = state === 'error'       ? '' : 'none';
-    resultContent.style.display     = state === 'content'     ? '' : 'none';
+    resultLoading.style.display = state === 'loading' ? '' : 'none';
+    resultError.style.display = state === 'error' ? '' : 'none';
+    resultContent.style.display = state === 'content' ? '' : 'none';
   }
 
   function showError(message) {
@@ -350,13 +350,13 @@ ${MARK_MINDMAP}
     // Headings
     html = html
       .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-      .replace(/^## (.+)$/gm,  '<h2>$1</h2>')
-      .replace(/^# (.+)$/gm,   '<h1>$1</h1>');
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>');
 
     // Bold / italic
     html = html
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g,     '<em>$1</em>');
+      .replace(/\*(.+?)\*/g, '<em>$1</em>');
 
     // Lists — collect consecutive list items into <ul>
     html = html.replace(/((?:^[-*] .+\n?)+)/gm, (block) => {
@@ -401,7 +401,10 @@ ${MARK_MINDMAP}
       return;
     }
 
-    const model  = s.modelName || DEFAULT_MODEL;
+    // 移除網址中&符號後的內容
+    url = url.split('&')[0];
+
+    const model = s.modelName || DEFAULT_MODEL;
     const prompt = buildCombinedVideoPrompt(s.prompt || DEFAULT_PROMPT);
     const apiUrl = `${GEMINI_API_BASE}${encodeURIComponent(model)}:generateContent`;
 

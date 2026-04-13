@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Markdown to HTML converter
     const markdownToHtml = (markdown) => {
         if (!markdown || typeof markdown !== 'string') return '';
-        
+
         let html = markdown
             // 代碼塊 (```code```)
             .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
@@ -116,7 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1) Seed URL from active tab (still editable)
     chrome.runtime.sendMessage({ type: 'GET_TAB_URL' }, (response) => {
         if (response && response.url) {
-            videoUrlInput.value = response.url;
+            // 移除網址中&符號後的內容
+            videoUrlInput.value = response.url.split('&')[0];
         }
         calculateTokens();
     });
