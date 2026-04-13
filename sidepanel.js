@@ -211,7 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // 重新取得目前網址
         chrome.runtime.sendMessage({ type: 'GET_TAB_URL' }, (response) => {
             if (response && response.url) {
-                videoUrlInput.value = response.url;
+                // 移除網址中&符號後的內容
+                videoUrlInput.value = response.url.split('&')[0];
                 // 如果是YouTube網址，重新初始化範圍和計算tokens
                 if (response.url.includes('youtube.com/watch')) {
                     initDuration().then(() => {
