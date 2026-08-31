@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Y2B 影片對話 Prototype</title>
+  <!-- Prototype question: how should YouTube conversation with time references feel inside the extension side panel? Three variants switch via ?variant=A/B/C. -->
+  <style>
+    :root {
+      color-scheme: dark;
+      --page: #08111f;
+      --page-soft: #101b2d;
+      --ink: #edf3fb;
+      --muted: #91a2b8;
+      --line: rgba(159, 182, 213, 0.18);
+      --blue: #79a9ee;
+      --blue-strong: #3c7dd1;
+      --amber: #f2b35f;
+      --shadow: 0 28px 70px rgba(0, 0, 0, 0.34);
+      --radius: 20px;
+      --ui: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+      --display: Georgia, "Noto Serif TC", serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { min-width: 320px; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 34px 20px 116px;
+      background:
+        radial-gradient(circle at 16% 8%, rgba(72, 124, 199, 0.16), transparent 28rem),
+        radial-gradient(circle at 88% 88%, rgba(242, 179, 95, 0.09), transparent 24rem),
+        var(--page);
+      color: var(--ink);
+      font-family: var(--ui);
+    }
+
+    button,
+    input,
+    textarea { font: inherit; }
+
+    button,
+    a { -webkit-tap-highlight-color: transparent; }
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--amber);
+      outline-offset: 3px;
+    }
+
+    .prototype-intro {
+      width: min(100%, 520px);
+      margin: 0 auto 18px;
+    }
+
+    .prototype-kicker {
+      margin: 0 0 7px;
+      color: var(--amber);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .prototype-intro h1 {
+      margin: 0;
+      font-family: var(--display);
+      font-size: clamp(1.75rem, 7vw, 2.45rem);
+      font-weight: 500;
+      letter-spacing: -0.035em;
+      line-height: 1.05;
+    }
+
+    .prototype-intro p {
+      max-width: 39rem;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.65;
+    }
+
+    #prototype-root {
+      width: min(100%, 520px);
+      margin: 0 auto;
+    }
+
+    .panel {
+      min-height: 720px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .panel h2,
+    .panel p { margin-top: 0; }
+
+    .panel button,
+    .panel a { transition: transform 160ms ease, opacity 160ms ease, background 160ms ease, border-color 160ms ease; }
+
+    .panel button:hover,
+    .panel a:hover { transform: translateY(-1px); }
+
+    .panel-a {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(145deg, rgba(31, 48, 75, 0.94), rgba(14, 23, 39, 0.98));
+    }
+
+    .a-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 22px 22px 16px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--blue);
+      font-size: 0.64rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+    }
+
+    .a-header h2,
+    .c-header h2 {
+      margin: 0;
+      font-size: 1.06rem;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+    }
+
+    .index-badge,
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      padding: 6px 9px;
+      border: 1px solid rgba(121, 169, 238, 0.34);
+      border-radius: 999px;
+      background: rgba(121, 169, 238, 0.11);
+      color: #b9d7ff;
+      font-size: 0.63rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    .a-actions {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .reset-button {
+      padding: 5px 0;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.66rem;
+      white-space: nowrap;
+    }
+
+    .reset-button:hover { color: var(--amber); }
+
+    .index-badge::before,
+    .status-pill::before {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #76d29d;
+      box-shadow: 0 0 0 3px rgba(118, 210, 157, 0.12);
+      content: "";
+    }
+
+    .a-source {
+      display: grid;
+      grid-template-columns: 46px 1fr;
+      gap: 12px;
+      align-items: center;
+      margin: 0 16px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(4, 10, 20, 0.28);
+    }
+
+    .source-art {
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: linear-gradient(145deg, #ec5b54, #74262c 72%);
+      color: #fff;
+      font-size: 1.2rem;
+    }
+
+    .source-title {
+      margin: 0 0 3px;
+      overflow: hidden;
+      color: var(--ink);
+      font-size: 0.84rem;
+      font-weight: 650;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .source-url {
+      margin: 0;
+      overflow: hidden;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 0.65rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .a-index {
+      margin: 20px 22px 0;
+      padding: 12px 0 4px;
+      border-top: 1px solid var(--line);
+    }
+
+    .section-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.67rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .section-label span:last-child { color: var(--amber); letter-spacing: 0; text-transform: none; }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+    }
+
+    .timeline-link {
+      display: block;
+      min-height: 66px;
+      padding: 9px 9px 8px;
+      border: 1px solid rgba(121, 169, 238, 0.2);
+      border-radius: 10px;
+      background: rgba(121, 169, 238, 0.08);
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .timeline-link strong,
+    .timeline-link span { display: block; }
+
+    .timeline-link strong { margin-bottom: 5px; color: var(--blue); font-size: 0.67rem; }
+    .timeline-link span { color: #c8d4e3; font-size: 0.7rem; line-height: 1.35; }
+
+    .message-thread {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      gap: 16px;
+      padding: 22px;
+    }
+
+    .message { display: flex; flex-direction: column; gap: 6px; max-width: 92%; }
+    .message-user { align-self: flex-end; align-items: flex-end; }
+    .message-assistant { align-self: flex-start; }
+
+    .message-meta {
+      color: var(--muted);
+      font-size: 0.64rem;
+      letter-spacing: 0.04em;
+    }
+
+    .bubble {
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      color: #dce6f3;
+      font-size: 0.82rem;
+      line-height: 1.65;
+    }
+
+    .message-user .bubble {
+      border-color: rgba(121, 169, 238, 0.28);
+      border-bottom-right-radius: 4px;
+      background: rgba(60, 125, 209, 0.27);
+    }
+
+    .message-assistant .bubble {
+      border-top-left-radius: 4px;
+      background: rgba(7, 14, 27, 0.38);
+    }
+
+    .bubble p { margin: 0; }
+
+    .references {
+      display: grid;
+      gap: 7px;
+      margin-top: 13px;
+    }
+
+    .reference-link {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 9px;
+      border: 1px solid rgba(242, 179, 95, 0.24);
+      border-radius: 9px;
+      background: rgba(242, 179, 95, 0.08);
+      color: #ffe0ad;
+      font-size: 0.68rem;
+      text-decoration: none;
+    }
+
+    .reference-link strong { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.68rem; }
+    .reference-link span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .reference-link em { color: #d6b477; font-size: 0.61rem; font-style: normal; }
+
+    .composer {
+      display: flex;
+      align-items: flex-end;
+      gap: 9px;
+      padding: 14px 18px 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .composer-field { min-width: 0; flex: 1; }
+
+    .chat-input {
+      display: block;
+      width: 100%;
+      min-height: 48px;
+      max-height: 130px;
+      resize: vertical;
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(4, 10, 20, 0.45);
+      color: var(--ink);
+      font-size: 0.79rem;
+      line-height: 1.5;
+    }
+
+    .chat-input::placeholder { color: #718299; }
+
+    .key-hint {
+      display: block;
+      margin-top: 4px;
+      color: #718299;
+      font-size: 0.61rem;
+      text-align: right;
+    }
+
+    .send-button {
+      display: inline-flex;
+      min-height: 48px;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 11px;
+      background: var(--blue-strong);
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.76rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .send-button:hover { background: #5594e4; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .composer-status {
+      min-height: 18px;
+      padding: 0 22px 4px;
+      color: var(--muted);
+      font-size: 0.65rem;
+    }
+
+    /* Variant B: a warmer, cinema-like prompt-first layout. */
+    .panel-b {
+      border: 1px solid #d9ccbb;
+      border-radius: 5px;
+      background: #f3eee6;
+      color: #2f2a24;
+      box-shadow: 12px 16px 0 rgba(242, 179, 95, 0.15), var(--shadow);
+    }
+
+    .b-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 17px 19px 13px;
+      border-bottom: 1px solid #d9ccbb;
+    }
+
+    .b-topline .eyebrow { margin: 0; color: #a36132; }
+
+    .b-topline .status-pill {
+      border-color: #c6d8c8;
+      background: #e6f0e6;
+      color: #3c6847;
+    }
+
+    .b-body { padding: 18px 18px 0; }
+
+    .b-summary {
+      margin-bottom: 19px;
+      padding: 14px;
+      border: 1px solid #d9ccbb;
+      background: #eee5da;
+    }
+
+    .b-summary-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .b-summary-header .prompt-label { margin-bottom: 5px; }
+
+    .b-summary-header h3 {
+      margin: 0;
+      color: #3d342c;
+      font-size: 0.87rem;
+      font-weight: 700;
+    }
+
+    .summary-state {
+      flex-shrink: 0;
+      padding-top: 2px;
+      color: #9a7757;
+      font-size: 0.64rem;
+      white-space: nowrap;
+    }
+
+    .summary-form { display: grid; gap: 8px; }
+
+    .summary-input {
+      width: 100%;
+      min-height: 116px;
+      resize: vertical;
+      padding: 10px;
+      border: 1px solid #d5c5b3;
+      border-radius: 4px;
+      background: #fffaf3;
+      color: #433b34;
+      font-size: 0.72rem;
+      line-height: 1.55;
+    }
+
+    .summary-button {
+      justify-self: start;
+      padding: 8px 12px;
+      border: 0;
+      border-radius: 4px;
+      background: #a36132;
+      color: #fffaf3;
+      cursor: pointer;
+      font-size: 0.71rem;
+      font-weight: 700;
+    }
+
+    .summary-button:hover { background: #844e28; }
+
+    .summary-result {
+      margin-top: 10px;
+      padding: 10px;
+      border-left: 3px solid #a36132;
+      background: #fffaf3;
+      color: #55483c;
+      font-size: 0.72rem;
+      line-height: 1.55;
+    }
+
+    .prompt-label {
+      margin: 0 0 9px;
+      color: #85786a;
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .prompt-pills {
+      display: flex;
+      gap: 7px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+
+    .prompt-pills::-webkit-scrollbar { display: none; }
+
+    .prompt-pills button {
+      flex: 0 0 auto;
+      padding: 8px 10px;
+      border: 1px solid #d5c5b3;
+      border-radius: 99px;
+      background: #fbf8f3;
+      color: #66594c;
+      cursor: pointer;
+      font-size: 0.69rem;
+    }
+
+    .prompt-pills button:hover { border-color: #aa7650; background: #fff; }
+
+    .b-thread {
+      min-height: 300px;
+      padding: 21px 0 18px;
+    }
+
+    .panel-b .message { max-width: 96%; }
+    .panel-b .message-user .bubble { border-color: #dfc9ac; background: #ead8bf; color: #554638; }
+    .panel-b .message-assistant .bubble { border-color: #dfd4c7; background: #fffaf3; color: #433b34; }
+    .panel-b .message-meta { color: #947e68; }
+    .panel-b .reference-link { border-color: #e4c998; background: #fff6e5; color: #8a5a2a; }
+    .panel-b .reference-link em { color: #aa8051; }
+    .panel-b .reset-button { color: #947e68; }
+    .panel-b .reset-button:hover { color: #8a5a2a; }
+
+    .b-composer {
+      padding: 14px 18px 18px;
+      border-top: 1px solid #d9ccbb;
+      background: #ebe3d8;
+    }
+
+    .panel-b .chat-input { border-color: #d5c5b3; background: #fffaf3; color: #332d27; }
+    .panel-b .chat-input::placeholder { color: #aa9a88; }
+    .panel-b .key-hint { color: #9c8c7b; }
+    .panel-b .composer { display: block; }
+    .panel-b .composer-field { width: 100%; }
+    .panel-b .send-button { background: #a36132; }
+    .panel-b .send-button:hover { background: #844e28; }
+    .panel-b .composer-status { padding-right: 0; padding-left: 0; color: #907f6e; }
+
+    /* Variant C: a compact utility layout with the question rail always visible. */
+    .panel-c {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      border: 1px solid #313944;
+      border-radius: 0;
+      background: #12161b;
+      color: #e7edf3;
+    }
+
+    .c-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 19px 18px 17px;
+      border-bottom: 1px solid #313944;
+    }
+
+    .c-header h2 { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.85rem; letter-spacing: 0; }
+    .c-header .eyebrow { margin-bottom: 5px; color: #8db3a1; }
+    .panel-c .status-pill { border-color: #3a574e; background: #1c2b27; color: #9ec7b1; }
+
+    .c-source-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1px solid #313944;
+    }
+
+    .c-source-item {
+      min-width: 0;
+      padding: 12px 14px;
+    }
+
+    .c-source-item + .c-source-item { border-left: 1px solid #313944; }
+    .c-source-item small { display: block; margin-bottom: 5px; color: #73808d; font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    .c-source-item strong { display: block; overflow: hidden; color: #d8e2ec; font-size: 0.7rem; text-overflow: ellipsis; white-space: nowrap; }
+
+    .c-workspace {
+      display: grid;
+      grid-template-columns: 126px 1fr;
+      min-height: 480px;
+    }
+
+    .question-rail {
+      padding: 17px 11px;
+      border-right: 1px solid #313944;
+      background: #0d1115;
+    }
+
+    .question-rail h3 {
+      margin: 0 0 12px;
+      color: #758391;
+      font-size: 0.61rem;
+      font-weight: 700;
+      letter-spacing: 0.11em;
+      line-height: 1.4;
+      text-transform: uppercase;
+    }
+
+    .rail-item {
+      display: block;
+      width: 100%;
+      margin-bottom: 7px;
+      padding: 9px 8px;
+      border: 1px solid #303b45;
+      border-radius: 6px;
+      background: transparent;
+      color: #aebbc8;
+      cursor: pointer;
+      font-size: 0.66rem;
+      line-height: 1.4;
+      text-align: left;
+    }
+
+    .rail-item:hover { border-color: #668e7c; background: #18211f; color: #d4eadc; }
+
+    .c-thread {
+      min-width: 0;
+      padding: 18px 14px;
+    }
+
+    .panel-c .message { max-width: 100%; }
+    .panel-c .message-meta { color: #778695; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.6rem; }
+    .panel-c .bubble { border-radius: 6px; border-color: #303b45; background: #1a2026; color: #d3dde7; font-size: 0.75rem; }
+    .panel-c .message-user .bubble { border-color: #36584d; background: #1b3029; color: #c9e2d3; }
+    .panel-c .reference-link { border-color: #5a4a2e; border-radius: 5px; background: #282217; color: #e4c987; }
+    .panel-c .reference-link em { color: #a9976a; }
+    .panel-c .reset-button { color: #778695; }
+    .panel-c .reset-button:hover { color: #d4eadc; }
+
+    .c-composer { border-top: 1px solid #313944; background: #0d1115; }
+    .panel-c .chat-input { border-color: #35414d; border-radius: 6px; background: #181e24; }
+    .panel-c .send-button { border-radius: 6px; background: #4d7b68; }
+    .panel-c .send-button:hover { background: #61967f; }
+    .panel-c .key-hint { color: #697784; }
+    .panel-c .composer-status { padding-left: 18px; padding-right: 18px; }
+
+    .empty-note {
+      padding: 24px 8px;
+      color: #718092;
+      font-size: 0.72rem;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .prototype-switcher {
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateX(-50%);
+      padding: 8px 10px;
+      border: 1px solid rgba(220, 232, 247, 0.22);
+      border-radius: 999px;
+      background: rgba(12, 21, 35, 0.94);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.32);
+      backdrop-filter: blur(14px);
+      white-space: nowrap;
+    }
+
+    .prototype-switcher button {
+      display: grid;
+      width: 29px;
+      height: 29px;
+      place-items: center;
+      border: 1px solid rgba(220, 232, 247, 0.22);
+      border-radius: 50%;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .prototype-switcher button:hover { border-color: var(--amber); background: rgba(242, 179, 95, 0.12); }
+
+    .switcher-label {
+      min-width: 130px;
+      color: #dce7f4;
+      font-size: 0.71rem;
+      text-align: center;
+    }
+
+    .switcher-label strong { color: var(--amber); }
+
+    @media (max-width: 470px) {
+      body { padding: 22px 10px 104px; }
+      .panel { min-height: 680px; }
+      .a-header { padding-left: 16px; padding-right: 16px; }
+      .a-index { margin-left: 16px; margin-right: 16px; }
+      .message-thread { padding-left: 16px; padding-right: 16px; }
+      .c-workspace { grid-template-columns: 108px 1fr; }
+      .prototype-switcher { bottom: 14px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="prototype-intro">
+    <p class="prototype-kicker">Y2B / extension conversation</p>
+    <h1>把影片變成可以追問的時間軸</h1>
+    <p>這是只供查看的 prototype。請在下方輸入問題：Enter 會送出，Shift+Enter 會保留換行；點擊回答中的時間區段會開啟 YouTube 對應起始時間。</p>
+  </header>
+
+  <main id="prototype-root" aria-live="polite"></main>
+
+  <nav class="prototype-switcher" aria-label="Prototype 方案切換">
+    <button type="button" data-direction="previous" aria-label="上一個方案">←</button>
+    <span class="switcher-label" id="switcher-label"></span>
+    <button type="button" data-direction="next" aria-label="下一個方案">→</button>
+  </nav>
+
+  <script>
+    (() => {
+      const VIDEO_ID = 'dQw4w9WgXcQ';
+      const VIDEO_URL = `https://www.youtube.com/watch?v=${VIDEO_ID}`;
+      const DEFAULT_SUMMARY_PROMPT = [
+        '請提供：',
+        '1. 影片主要內容筆記',
+        '2. 關鍵觀點和重要資訊',
+        '3. 主要結論或要點',
+        '4. 如果有教學內容，請列出主要步驟',
+        '',
+        '請用繁體中文回答，並保持內容簡潔明瞭。',
+      ].join('\n');
+      const VARIANTS = [
+        { key: 'A', name: '時間索引先行', render: renderVariantA },
+        { key: 'B', name: '影片卡片先行', render: renderVariantB },
+        { key: 'C', name: '工具列先行', render: renderVariantC },
+      ];
+      const root = document.getElementById('prototype-root');
+      const switcherLabel = document.getElementById('switcher-label');
+      let currentVariant = 0;
+
+      function timeUrl(seconds) {
+        return `${VIDEO_URL}&t=${seconds}s`;
+      }
+
+      function seedReferences() {
+        return [
+          { start: 10, end: 42, title: '核心概念的定義', reason: '影片在這裡建立主要觀點' },
+          { start: 94, end: 126, title: '示範與實際例子', reason: '影片在這裡補充說明' },
+        ];
+      }
+
+      function renderVariantA() {
+        return `
+          <section class="panel panel-a" aria-label="方案 A：時間索引先行">
+            <header class="a-header">
+              <div>
+                <p class="eyebrow">VIDEO CHAT / A</p>
+                <h2>從影片開始對話</h2>
+              </div>
+              <div class="a-actions">
+                <button class="reset-button" type="button" data-reset>新對話</button>
+                <span class="index-badge">INDEX READY</span>
+              </div>
+            </header>
+            <section class="a-source" aria-label="目前影片">
+              <div class="source-art" aria-hidden="true">▶</div>
+              <div>
+                <p class="source-title">How to think clearly about complex ideas</p>
+                <p class="source-url">${VIDEO_URL}</p>
+              </div>
+            </section>
+            <section class="a-index" aria-label="AI 時間索引">
+              <div class="section-label"><span>AI 時間索引</span><span>12 segments · 約略對應</span></div>
+              <div class="timeline">
+                <a class="timeline-link" href="${timeUrl(10)}" target="_blank" rel="noopener noreferrer"><strong>00:10–00:42</strong><span>核心概念的定義</span></a>
+                <a class="timeline-link" href="${timeUrl(94)}" target="_blank" rel="noopener noreferrer"><strong>01:34–02:06</strong><span>示範與實際例子</span></a>
+                <a class="timeline-link" href="${timeUrl(182)}" target="_blank" rel="noopener noreferrer"><strong>03:02–03:29</strong><span>最後的結論</span></a>
+              </div>
+            </section>
+            <div class="message-thread" data-thread role="log" aria-label="方案 A 對話內容"></div>
+            <div class="composer-status" data-status role="status" aria-live="polite">示意資料 · 尚未連接 Gemini API</div>
+            ${composerMarkup('a')}
+          </section>`;
+      }
+
+      function renderVariantB() {
+        return `
+          <section class="panel panel-b" aria-label="方案 B：影片卡片先行">
+            <header class="b-topline">
+              <p class="eyebrow">Y2B / ASK THE VIDEO</p>
+              <div class="a-actions">
+                <button class="reset-button" type="button" data-reset>新對話</button>
+                <span class="status-pill">12 段索引完成</span>
+              </div>
+            </header>
+            <section class="b-body">
+              <section class="b-summary" aria-labelledby="b-summary-title">
+                <div class="b-summary-header">
+                  <div>
+                    <p class="prompt-label">保留現有流程</p>
+                    <h3 id="b-summary-title">預設 Prompt 產生摘要</h3>
+                  </div>
+                  <span class="summary-state" data-summary-state>尚未產生</span>
+                </div>
+                <form class="summary-form" data-summary-form>
+                  <label class="sr-only" for="summary-prompt">摘要 Prompt</label>
+                  <textarea class="summary-input" id="summary-prompt" data-summary-input rows="5"></textarea>
+                  <button class="summary-button" type="submit">產生摘要</button>
+                </form>
+                <div class="summary-result" data-summary-result hidden role="status">示意摘要：影片把複雜觀點拆成可觀察的小問題，再逐一確認假設。</div>
+              </section>
+              <p class="prompt-label">你可以這樣問</p>
+              <div class="prompt-pills" data-prompt-pills>
+                <button type="button">這支影片的核心觀點？</button>
+                <button type="button">哪裡有實際例子？</button>
+                <button type="button">用一句話總結</button>
+              </div>
+              <section class="message-thread b-thread" data-thread role="log" aria-label="方案 B 對話內容"></section>
+            </section>
+            <div class="b-composer">
+              <div class="composer-status" data-status role="status" aria-live="polite">示意資料 · 可直接追問影片</div>
+              ${composerMarkup('b', false)}
+            </div>
+          </section>`;
+      }
+
+      function renderVariantC() {
+        return `
+          <section class="panel panel-c" aria-label="方案 C：工具列先行">
+            <header class="c-header">
+              <div>
+                <p class="eyebrow">SESSION / 01</p>
+                <h2>影片對話</h2>
+              </div>
+              <div class="a-actions">
+                <button class="reset-button" type="button" data-reset>新對話</button>
+                <span class="status-pill">READY</span>
+              </div>
+            </header>
+            <section class="c-source-list" aria-label="影片狀態">
+              <div class="c-source-item"><small>Source</small><strong>complex-ideas</strong></div>
+              <div class="c-source-item"><small>Index</small><strong>12 segments / AI</strong></div>
+            </section>
+            <div class="c-workspace">
+              <aside class="question-rail">
+                <h3>快速提問</h3>
+                <button class="rail-item" type="button">核心觀點？</button>
+                <button class="rail-item" type="button">關鍵例子？</button>
+                <button class="rail-item" type="button">整理成步驟</button>
+              </aside>
+              <section class="message-thread c-thread" data-thread role="log" aria-label="方案 C 對話內容"></section>
+            </div>
+            <div class="c-composer">
+              <div class="composer-status" data-status role="status" aria-live="polite">外部 YouTube 起始時間連結 · 無內嵌播放器</div>
+              ${composerMarkup('c')}
+            </div>
+          </section>`;
+      }
+
+      function composerMarkup(variant, showSubmitButton = true) {
+        return `
+          <form class="composer" data-form="${variant}">
+            <div class="composer-field">
+              <label class="sr-only" for="chat-input-${variant}">詢問影片</label>
+              <textarea class="chat-input" id="chat-input-${variant}" data-input rows="2" maxlength="500" placeholder="問一個關於影片的問題…" autocomplete="off"></textarea>
+              <small class="key-hint">Enter 送出 · Shift+Enter 換行</small>
+            </div>
+            ${showSubmitButton ? '<button class="send-button" type="submit">送出</button>' : ''}
+          </form>`;
+      }
+
+      function createReference(reference) {
+        const link = document.createElement('a');
+        link.className = 'reference-link';
+        link.href = timeUrl(reference.start);
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+
+        const time = document.createElement('strong');
+        time.textContent = `${formatTime(reference.start)}–${formatTime(reference.end)}`;
+        const title = document.createElement('span');
+        title.textContent = reference.title;
+        const reason = document.createElement('em');
+        reason.textContent = reference.reason;
+
+        link.append(time, title, reason);
+        return link;
+      }
+
+      function createUserMessage(text) {
+        const article = document.createElement('article');
+        article.className = 'message message-user';
+        const meta = document.createElement('div');
+        meta.className = 'message-meta';
+        meta.textContent = '你';
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.textContent = text;
+        article.append(meta, bubble);
+        return article;
+      }
+
+      function createAssistantMessage(text, references) {
+        const article = document.createElement('article');
+        article.className = 'message message-assistant';
+        const meta = document.createElement('div');
+        meta.className = 'message-meta';
+        meta.textContent = 'Gemini · 影片對話';
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        const answer = document.createElement('p');
+        answer.textContent = text;
+        bubble.append(answer);
+
+        if (references.length) {
+          const list = document.createElement('div');
+          list.className = 'references';
+          references.forEach((reference) => list.appendChild(createReference(reference)));
+          bubble.appendChild(list);
+        }
+
+        article.append(meta, bubble);
+        return article;
+      }
+
+      function seedThread(thread) {
+        thread.append(
+          createUserMessage('這支影片怎麼解釋「把複雜問題拆開」？'),
+          createAssistantMessage(
+            '影片先把複雜問題拆成可以觀察的小問題，再逐一確認假設。回答下方保留了 AI 找到的相關片段，點擊時間即可從 YouTube 對應位置開始觀看。',
+            seedReferences(),
+          ),
+        );
+      }
+
+      function wireSummary() {
+        const form = root.querySelector('[data-summary-form]');
+        if (!form) return;
+
+        const input = root.querySelector('[data-summary-input]');
+        const state = root.querySelector('[data-summary-state]');
+        const result = root.querySelector('[data-summary-result]');
+        input.value = DEFAULT_SUMMARY_PROMPT;
+
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          if (!input.value.trim()) {
+            state.textContent = '請先輸入 Prompt';
+            return;
+          }
+          state.textContent = '示意摘要已產生';
+          result.hidden = false;
+        });
+      }
+
+      function wireConversation() {
+        const thread = root.querySelector('[data-thread]');
+        const form = root.querySelector('[data-form]');
+        const input = root.querySelector('[data-input]');
+        const status = root.querySelector('[data-status]');
+
+        seedThread(thread);
+
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          const question = input.value.trim();
+          if (!question) {
+            status.textContent = '請先輸入問題；這裡是 prototype，不會送出 API 請求。';
+            input.focus();
+            return;
+          }
+
+          thread.appendChild(createUserMessage(question));
+          input.value = '';
+          status.textContent = '示意回應中…';
+          thread.scrollTop = thread.scrollHeight;
+
+          window.setTimeout(() => {
+            thread.appendChild(createAssistantMessage(
+              '示意回答：Gemini 會沿用第一次建立的影片時間索引，只回傳與問題相關的片段 ID；前端再把合法 ID 轉成可點擊的 YouTube 起始時間。',
+              [{ start: 10, end: 42, title: '拆解複雜問題的方法', reason: '與問題最相關' }],
+            ));
+            status.textContent = '已加入示意回應 · 引用時間可能有誤差';
+            thread.scrollTop = thread.scrollHeight;
+          }, 180);
+        });
+
+        input.addEventListener('keydown', (event) => {
+          if (event.key !== 'Enter' || event.shiftKey || event.isComposing || event.keyCode === 229) return;
+          event.preventDefault();
+          form.requestSubmit();
+        });
+
+        root.querySelectorAll('[data-prompt-pills] button, .rail-item').forEach((button) => {
+          button.addEventListener('click', () => {
+            input.value = button.textContent.trim();
+            input.focus();
+          });
+        });
+      }
+
+      function resetConversation() {
+        const thread = root.querySelector('[data-thread]');
+        const input = root.querySelector('[data-input]');
+        const status = root.querySelector('[data-status]');
+        thread.replaceChildren();
+        input.value = '';
+        status.textContent = '新對話已開始 · 尚未送出 API 請求';
+        input.focus();
+      }
+
+      function render() {
+        const url = new URL(window.location.href);
+        const requested = url.searchParams.get('variant');
+        const found = VARIANTS.findIndex((variant) => variant.key === requested);
+        currentVariant = found >= 0 ? found : 0;
+        root.innerHTML = VARIANTS[currentVariant].render();
+        switcherLabel.innerHTML = `<strong>${VARIANTS[currentVariant].key}</strong> · ${VARIANTS[currentVariant].name}`;
+        wireSummary();
+        wireConversation();
+      }
+
+      function setVariant(index) {
+        currentVariant = (index + VARIANTS.length) % VARIANTS.length;
+        const url = new URL(window.location.href);
+        url.searchParams.set('variant', VARIANTS[currentVariant].key);
+        window.history.replaceState(null, '', url);
+        render();
+      }
+
+      function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const remaining = (seconds % 60).toString().padStart(2, '0');
+        return `${minutes}:${remaining}`;
+      }
+
+      document.querySelector('[data-direction="previous"]').addEventListener('click', () => setVariant(currentVariant - 1));
+      document.querySelector('[data-direction="next"]').addEventListener('click', () => setVariant(currentVariant + 1));
+      document.addEventListener('keydown', (event) => {
+        const target = event.target;
+        if (target.matches('input, textarea, [contenteditable="true"]')) return;
+        if (event.key === 'ArrowLeft') setVariant(currentVariant - 1);
+        if (event.key === 'ArrowRight') setVariant(currentVariant + 1);
+      });
+
+      root.addEventListener('click', (event) => {
+        if (event.target.closest('[data-form]')) return;
+        const reset = event.target.closest('[data-reset]');
+        if (reset) resetConversation();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+
+</html>

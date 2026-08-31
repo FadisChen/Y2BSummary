@@ -11,46 +11,96 @@
 <body>
     <div class="container">
         <div class="header-row">
-            <h1></h1>
+            <div>
+                <span class="brand-kicker">Y2B RESEARCH</span>
+            </div>
             <div class="header-buttons">
                 <button id="refresh-btn" class="icon-btn" title="重新整理網址和範圍">↻</button>
                 <button id="settings-btn" class="icon-btn" title="設定">⚙️</button>
             </div>
         </div>
 
-        <div class="form-group">
-            <label for="video-url">影片網址:</label>
+        <div class="video-source" aria-labelledby="video-url-label">
             <input type="text" id="video-url" placeholder="貼上或編輯 YouTube 影片網址">
         </div>
 
-        <form id="analysis-form">
-            <div class="form-group">
-                <label for="prompt">Prompt:</label>
-                <textarea id="prompt" rows="10" placeholder="請以條列方式摘要影片內容"></textarea>
+        <div class="tab-bar" role="tablist" aria-label="摘要與影片對話">
+            <button class="tab-btn is-active" id="tab-summary" type="button" role="tab" aria-selected="true" aria-controls="panel-summary">
+                <span class="tab-label">摘要</span>
+            </button>
+            <button class="tab-btn" id="tab-chat" type="button" role="tab" aria-selected="false" aria-controls="panel-chat">
+                <span class="tab-label">對話</span>
+            </button>
+        </div>
+
+        <div class="tab-panel is-active" id="panel-summary" role="tabpanel" aria-labelledby="tab-summary">
+        <section class="summary-card" aria-labelledby="summary-title">
+            <form id="analysis-form">
+                <div class="form-group">
+                    <label for="prompt">摘要 Prompt</label>
+                    <textarea id="prompt" rows="10" placeholder="請以條列方式摘要影片內容"></textarea>
+                </div>
+
+                <div class="range-summary">
+                    <span>分析範圍：</span>
+                    <span id="selected-range">00:00 - 00:00</span>
+                    <span class="hint">（點右上角⚙️調整）</span>
+                </div>
+
+                <div class="token-info">
+                    <p>
+                        預估 Tokens：<span id="token-count">0</span>
+                        ／上限：<span id="token-cap">1,048,576</span>
+                    </p>
+                    <p id="token-warning" class="warn" style="display:none;">超過上限，請縮短區間或降低 FPS。</p>
+                </div>
+                <div class="form-group2">
+                    <button type="submit" id="submit-btn">產生摘要</button>
+                </div>
+            </form>
+
+            <div id="result-container">
+                <div id="result-display" class="loading">請點擊產生摘要開始分析…</div>
+            </div>
+        </section>
+        </div>
+
+        <div class="tab-panel" id="panel-chat" role="tabpanel" aria-labelledby="tab-chat" hidden>
+        <section class="chat-card" id="chat-card" aria-labelledby="chat-title">
+            <div class="chat-header">
+                <div class="chat-heading">
+                    <span class="chat-index-status" id="chat-index-status">尚未建立影片時間索引</span>
+                </div>
+                <div class="chat-actions">
+                    <span class="chat-state-label">Gemini</span>
+                    <button class="chat-reset-btn" id="chat-reset-btn" type="button">新對話</button>
+                </div>
             </div>
 
-            <div class="range-summary">
-                <span>分析範圍：</span>
-                <span id="selected-range">00:00 - 00:00</span>
-                <span class="hint">（點右上角⚙️調整）</span>
+            <div class="chat-stage" id="chat-stage" aria-busy="false">
+                <div class="chat-empty" id="chat-empty">
+                    <strong>摘要完成後，繼續追問影片</strong>
+                </div>
+                <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="影片對話內容"></div>
             </div>
 
-            <div class="token-info">
-                <p>
-                    預估 Tokens：<span id="token-count">0</span>
-                    ／上限：<span id="token-cap">1,048,576</span>
-                </p>
-                <p id="token-warning" class="warn" style="display:none;">超過上限，請縮短區間或降低 FPS。</p>
+            <div class="chat-status-row">
+                <div class="chat-status" id="chat-status" role="status" aria-live="polite"></div>
+                <div class="chat-error" id="chat-error" role="alert" hidden></div>
             </div>
-            <div class="form-group2">
-                <button type="submit" id="submit-btn">送出分析</button>
-            </div>
-        </form>
 
-        <hr>
-
-        <div id="result-container">
-            <div id="result-display" class="loading">請點擊送出按鈕開始分析...</div>
+            <form class="chat-composer" id="chat-form">
+                <label class="sr-only" for="chat-input">詢問影片</label>
+                <textarea
+                    class="chat-input"
+                    id="chat-input"
+                    rows="2"
+                    maxlength="2000"
+                    placeholder="問一個關於影片的問題…"
+                    autocomplete="off"
+                ></textarea>
+            </form>
+        </section>
         </div>
     </div>
 
