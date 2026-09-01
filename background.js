@@ -1,6 +1,6 @@
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
 const GEMINI_INTERACTIONS_URL = 'https://generativelanguage.googleapis.com/v1beta/interactions';
-const DEFAULT_GEMINI_MODEL = 'gemini-3-flash-preview';
+const DEFAULT_GEMINI_MODEL = 'gemini-3.5-flash-lite';
 
 const normalizeModelName = (model) => {
     const value = typeof model === 'string' ? model.trim() : '';

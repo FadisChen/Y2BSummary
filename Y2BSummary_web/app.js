@@ -5,7 +5,7 @@
   const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
   const GEMINI_INTERACTIONS_URL = 'https://generativelanguage.googleapis.com/v1beta/interactions';
   const STORAGE_KEY = 'y2bsummary_settings';
-  const DEFAULT_MODEL = 'gemini-3-flash-preview';
+  const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
   const MAX_CHAT_SEGMENTS = 180;
   const MAX_CHAT_REFERENCES = 5;
   const DEFAULT_PROMPT =

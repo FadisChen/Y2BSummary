@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const DEFAULT_MODEL = 'gemini-3-flash-preview';
+    const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
     const MAX_CHAT_SEGMENTS = 180;
     const MAX_CHAT_REFERENCES = 5;
     const DEFAULT_SUMMARY_PROMPT = '請提供：\n1. 影片主要內容筆記\n2. 關鍵觀點和重要資訊\n3. 主要結論或要點\n4. 如果有教學內容，請列出主要步驟\n\n請用繁體中文回答，並保持內容簡潔明瞭。';
@@ -450,7 +450,7 @@ ${question}`;
     const loadSettings = () => new Promise((resolve) => {
         chrome.storage.local.get(['geminiApiKey', 'geminiModel', 'fps', 'mediaRes'], (store) => {
             if (store.geminiApiKey) apiKeyInput.value = store.geminiApiKey;
-            geminiModelInput.value = store.geminiModel || 'gemini-3-flash-preview';
+            geminiModelInput.value = store.geminiModel || 'gemini-3.5-flash-lite';
             fpsInput.value = Number(store.fps) > 0 ? String(store.fps) : '1.0';
             mediaResSelect.value = store.mediaRes || 'default';
             resolve();
@@ -460,7 +460,7 @@ ${question}`;
     const saveSettings = () => new Promise((resolve) => {
         const settings = {
             geminiApiKey: apiKeyInput.value.trim(),
-            geminiModel: geminiModelInput.value.trim() || 'gemini-3-flash-preview',
+            geminiModel: geminiModelInput.value.trim() || 'gemini-3.5-flash-lite',
             fps: parseFloat(fpsInput.value) || 1,
             mediaRes: mediaResSelect.value || 'default'
         };
