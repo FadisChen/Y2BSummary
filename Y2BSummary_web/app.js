@@ -5,8 +5,16 @@
   const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
   const STORAGE_KEY = 'y2bsummary_settings';
   const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
-  const DEFAULT_PROMPT =
-    '請提供：\n1. 影片主要內容筆記\n2. 關鍵觀點和重要資訊\n3. 主要結論或要點\n4. 如果有教學內容，請列出主要步驟\n\n請用繁體中文回答，並保持內容簡潔明瞭。';
+  const PROMPT_VERSION = 1;
+  const DEFAULT_PROMPT = `請用繁體中文，以 Markdown 整理影片，內容保持精簡，但保留理解主題所需的脈絡。只根據影片實際表達或展示的內容，不從標題或外部常識推測；影片沒有說明的資訊不要自行補充。依影片內容使用以下結構，不適用的小節可省略：
+
+1. **影片主旨**：用一兩句說明主題與核心論點。
+2. **內容摘要**：按影片脈絡整理主要內容。
+3. **關鍵觀點與例證**：列出重要主張、理由、數據或例子，區分講者說法與影片實際展示的佐證。
+4. **結論與可行動重點**：整理影片結論；若有具體建議，列出可採取的行動。
+5. **教學步驟**：若影片包含教學，整理必要前置條件、步驟、檢查點與提及的常見問題；標明哪些步驟有展示、哪些只有口頭提及，不推測缺漏步驟。
+
+若能可靠辨識相關時間點，附上約略時間；無法確認時省略，不要猜測。`;
 
   function buildVideoPrompt(userSummaryInstruction) {
     const summaryReq = (userSummaryInstruction || '').trim() || DEFAULT_PROMPT;
@@ -57,6 +65,14 @@
 
   function saveSettings(data) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  function migratePromptSettings() {
+    const s = loadSettings();
+    if (s.promptVersion === PROMPT_VERSION) return;
+    s.prompt = DEFAULT_PROMPT;
+    s.promptVersion = PROMPT_VERSION;
+    saveSettings(s);
   }
 
   function populateModal() {
@@ -298,6 +314,7 @@
   });
 
   // ── Init ───────────────────────────────────────────────────────────────────
+  migratePromptSettings();
   showState('placeholder');
   (function initFpsMediaFromStorage() {
     const st = loadSettings();
