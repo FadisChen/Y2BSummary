@@ -8,36 +8,9 @@
   const DEFAULT_PROMPT =
     '請提供：\n1. 影片主要內容筆記\n2. 關鍵觀點和重要資訊\n3. 主要結論或要點\n4. 如果有教學內容，請列出主要步驟\n\n請用繁體中文回答，並保持內容簡潔明瞭。';
 
-  const MARK_SUMMARY = '<<<Y2B_SUMMARY>>>';
-  const MARK_MINDMAP = '<<<Y2B_MINDMAP>>>';
-
-  /**
-   * 單次請求：同時要求摘要筆記 + 心智圖 Markdown（與 ChatExtension 心智圖規則一致），以分隔線切分。
-   */
-  function buildCombinedVideoPrompt(userSummaryInstruction) {
+  function buildVideoPrompt(userSummaryInstruction) {
     const summaryReq = (userSummaryInstruction || '').trim() || DEFAULT_PROMPT;
-    return `請觀看影片，並依序產出兩個區塊。你必須使用下列分隔線（各占獨立一行，文字需完全一致），不得在分隔線之外寫任何前言、結語或重複標題。
-
-${MARK_SUMMARY}
-請依照下列要求撰寫「摘要筆記」（使用 Markdown，繁體中文）：
-${summaryReq}
-
-${MARK_MINDMAP}
-請另產出「心智圖專用」Markdown（僅此區塊內容；不要重複貼上摘要全文）。心智圖規則：
-1. 第一行用 # 標題作為心智圖的中心主題
-2. 用 ## 表示主要分支（3到6個）
-3. 用 ### 表示次要分支
-4. 在各層級下用 - 列出關鍵要點
-5. 每個要點保持簡潔（不超過15個字）
-6. 層級不超過 5 層
-7. 不要包在程式碼區塊（\`\`\`）內，不要額外說明文字`;
-  }
-
-  function stripMarkdownCodeFence(raw) {
-    return raw
-      .replace(/^```(?:markdown)?\n?/i, '')
-      .replace(/\n?```$/i, '')
-      .trim();
+    return `請觀看影片，並依照以下要求撰寫摘要筆記（使用 Markdown，繁體中文）：\n${summaryReq}`;
   }
 
   function extractGeminiText(result) {
@@ -49,26 +22,6 @@ ${MARK_MINDMAP}
       }
     }
     return '';
-  }
-
-  /**
-   * 從單次 API 回傳中切出摘要與心智圖 Markdown；若格式不符則整段當摘要、心智圖為 null。
-   */
-  function parseCombinedResponse(raw) {
-    if (!raw || typeof raw !== 'string') {
-      return { summary: '', mindmapMd: null };
-    }
-    const text = raw.trim();
-    const iS = text.indexOf(MARK_SUMMARY);
-    const iM = text.indexOf(MARK_MINDMAP);
-    if (iS === -1 || iM === -1 || iM <= iS) {
-      return { summary: text, mindmapMd: null };
-    }
-    const afterS = iS + MARK_SUMMARY.length;
-    const summary = text.slice(afterS, iM).trim();
-    let mindmapMd = text.slice(iM + MARK_MINDMAP.length).trim();
-    mindmapMd = stripMarkdownCodeFence(mindmapMd);
-    return { summary: summary || text, mindmapMd: mindmapMd || null };
   }
 
   // ── DOM refs ───────────────────────────────────────────────────────────────
@@ -91,22 +44,6 @@ ${MARK_MINDMAP}
 
   const fpsInput = document.getElementById('fps');
   const mediaResSelect = document.getElementById('media-res');
-
-  // ── Tab refs ───────────────────────────────────────────────────────────────
-  const tabNote = document.getElementById('tab-note');
-  const tabMindmap = document.getElementById('tab-mindmap');
-  const panelNote = document.getElementById('panel-note');
-  const panelMindmap = document.getElementById('panel-mindmap');
-
-  // ── Mindmap refs ───────────────────────────────────────────────────────────
-  const mindmapWrap = document.getElementById('mindmap-wrap');
-  const mindmapSvg = document.getElementById('mindmap-svg');
-  const mindmapPlaceholder = document.getElementById('mindmap-placeholder');
-  const mmZoomIn = document.getElementById('mm-zoom-in');
-  const mmZoomOut = document.getElementById('mm-zoom-out');
-  const mmFit = document.getElementById('mm-fit');
-  const mmExpand = document.getElementById('mm-expand');
-  const mmCollapse = document.getElementById('mm-collapse');
 
   // ── Settings ───────────────────────────────────────────────────────────────
   function loadSettings() {
@@ -175,28 +112,6 @@ ${MARK_MINDMAP}
     }
   });
 
-  // ── Tab switching ─────────────────────────────────────────────────────────
-  function activateTab(tab) {
-    const isNote = tab === 'note';
-    tabNote.classList.toggle('is-active', isNote);
-    tabNote.setAttribute('aria-selected', String(isNote));
-    tabMindmap.classList.toggle('is-active', !isNote);
-    tabMindmap.setAttribute('aria-selected', String(!isNote));
-    panelNote.classList.toggle('is-active', isNote);
-    panelMindmap.classList.toggle('is-active', !isNote);
-
-    // 分頁剛顯示時容器尺寸才正確，延遲 fit 避免在 display:none 下建立導致空白
-    if (!isNote && markmapInstance) {
-      requestAnimationFrame(() => {
-        markmapInstance.fit();
-        requestAnimationFrame(() => markmapInstance.fit());
-      });
-    }
-  }
-
-  tabNote.addEventListener('click', () => activateTab('note'));
-  tabMindmap.addEventListener('click', () => activateTab('mindmap'));
-
   // ── Toast ──────────────────────────────────────────────────────────────────
   let toastTimer = null;
 
@@ -206,114 +121,6 @@ ${MARK_MINDMAP}
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('is-visible'), duration);
   }
-
-  // ── Markmap（與 ChatExtension/sidebar.js 相同模式：destroy → 清空 SVG → Markmap.create）──
-  let markmapInstance = null;
-
-  function mindmapWalkTree(node, callback) {
-    if (!node) return;
-    callback(node);
-    if (node.children) {
-      node.children.forEach((child) => mindmapWalkTree(child, callback));
-    }
-  }
-
-  function fitMindmapSoon() {
-    if (!markmapInstance) return;
-    requestAnimationFrame(() => {
-      markmapInstance.fit();
-      requestAnimationFrame(() => markmapInstance.fit());
-    });
-  }
-
-  /** 心智圖在「摘要筆記」分頁時可能處於 display:none，尺寸為 0；用 ResizeObserver 在可見後重算版面 */
-  if (typeof ResizeObserver !== 'undefined' && mindmapWrap) {
-    const ro = new ResizeObserver((entries) => {
-      const e = entries[0];
-      if (!e || !markmapInstance) return;
-      const { width, height } = e.contentRect;
-      if (width > 1 && height > 1) markmapInstance.fit();
-    });
-    ro.observe(mindmapWrap);
-  }
-
-  function renderMindmap(markdownText) {
-    const mm = window.markmap;
-    if (!mm || !mm.Transformer || !mm.Markmap) {
-      console.warn('markmap 未載入（請確認 js/d3、markmap-lib、markmap-view 順序正確）');
-      return;
-    }
-
-    const { Transformer, Markmap } = mm;
-
-    try {
-      const transformer = new Transformer();
-      const { root } = transformer.transform(markdownText);
-
-      mindmapPlaceholder.style.display = 'none';
-      mindmapSvg.classList.add('is-visible');
-
-      if (markmapInstance) {
-        markmapInstance.destroy();
-        markmapInstance = null;
-      }
-      mindmapSvg.innerHTML = '';
-
-      markmapInstance = Markmap.create(
-        mindmapSvg,
-        {
-          autoFit: true,
-          duration: 300,
-        },
-        root
-      );
-
-      fitMindmapSoon();
-    } catch (err) {
-      console.error('心智圖渲染失敗', err);
-    }
-  }
-
-  // Toolbar button handlers
-  mmZoomIn.addEventListener('click', () => {
-    if (!markmapInstance) return;
-    markmapInstance.rescale(1.25);
-  });
-
-  mmZoomOut.addEventListener('click', () => {
-    if (!markmapInstance) return;
-    markmapInstance.rescale(0.8);
-  });
-
-  mmFit.addEventListener('click', () => {
-    if (!markmapInstance) return;
-    markmapInstance.fit();
-  });
-
-  mmExpand.addEventListener('click', () => {
-    if (!markmapInstance) return;
-    mindmapWalkTree(markmapInstance.state.data, (node) => {
-      if (node.payload) node.payload.fold = 0;
-      else node.payload = { fold: 0 };
-    });
-    markmapInstance.setData();
-    markmapInstance.fit();
-  });
-
-  mmCollapse.addEventListener('click', () => {
-    if (!markmapInstance) return;
-    const root = markmapInstance.state.data;
-    if (root && root.children) {
-      root.children.forEach((child) => {
-        mindmapWalkTree(child, (node) => {
-          if (node.payload) node.payload.fold = 1;
-          else node.payload = { fold: 1 };
-        });
-      });
-    }
-    markmapInstance.setData();
-    markmapInstance.fit();
-  });
 
   // ── Result display helpers ─────────────────────────────────────────────────
   function showState(state) {
@@ -405,7 +212,7 @@ ${MARK_MINDMAP}
     url = url.split('&')[0];
 
     const model = s.modelName || DEFAULT_MODEL;
-    const prompt = buildCombinedVideoPrompt(s.prompt || DEFAULT_PROMPT);
+    const prompt = buildVideoPrompt(s.prompt || DEFAULT_PROMPT);
     const apiUrl = `${GEMINI_API_BASE}${encodeURIComponent(model)}:generateContent`;
 
     const fpsVal =
@@ -457,18 +264,8 @@ ${MARK_MINDMAP}
         throw new Error('API 回應中找不到有效的文字內容，請確認影片網址是否正確。');
       }
 
-      const { summary, mindmapMd } = parseCombinedResponse(raw);
-
-      resultContent.innerHTML = markdownToHtml(summary);
+      resultContent.innerHTML = markdownToHtml(raw.trim());
       showState('content');
-
-      if (mindmapMd) {
-        renderMindmap(mindmapMd);
-      } else {
-        console.warn('回應未含心智圖分隔區塊，改以摘要文字繪製心智圖');
-        showToast('未偵測到心智圖區塊，已暫以摘要文字繪製心智圖');
-        renderMindmap(summary);
-      }
     } catch (err) {
       showError(err.message);
     } finally {
