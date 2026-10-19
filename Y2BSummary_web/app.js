@@ -4,7 +4,7 @@
   // ── Constants ──────────────────────────────────────────────────────────────
   const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
   const STORAGE_KEY = 'y2bsummary_settings';
-  const DEFAULT_MODEL = 'gemini-3-flash-preview';
+  const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
   const DEFAULT_PROMPT =
     '請提供：\n1. 影片主要內容筆記\n2. 關鍵觀點和重要資訊\n3. 主要結論或要點\n4. 如果有教學內容，請列出主要步驟\n\n請用繁體中文回答，並保持內容簡潔明瞭。';
 

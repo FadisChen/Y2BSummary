@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadSettings = () => new Promise((resolve) => {
         chrome.storage.local.get(['geminiApiKey', 'geminiModel', 'fps', 'mediaRes'], (store) => {
             if (store.geminiApiKey) apiKeyInput.value = store.geminiApiKey;
-            geminiModelInput.value = store.geminiModel || 'gemini-3-flash-preview';
+            geminiModelInput.value = store.geminiModel || 'gemini-3.5-flash-lite';
             fpsInput.value = Number(store.fps) > 0 ? String(store.fps) : '1.0';
             mediaResSelect.value = store.mediaRes || 'default';
             resolve();
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveSettings = () => new Promise((resolve) => {
         const settings = {
             geminiApiKey: apiKeyInput.value.trim(),
-            geminiModel: geminiModelInput.value.trim() || 'gemini-3-flash-preview',
+            geminiModel: geminiModelInput.value.trim() || 'gemini-3.5-flash-lite',
             fps: parseFloat(fpsInput.value) || 1,
             mediaRes: mediaResSelect.value || 'default'
         };
